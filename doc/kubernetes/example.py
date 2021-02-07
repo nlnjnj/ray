@@ -45,9 +45,9 @@ def main():
 
 if __name__ == "__main__":
     # NOTE: If you know you're running this on the head node, you can just use "localhost" here.
-    if "RAY_HEAD_IP" not in os.environ or os.environ["RAY_HEAD_IP"] == "":
-        raise ValueError("RAY_HEAD_IP environment variable empty. Is there a ray cluster running?")
+    if "RAY_HEAD_HOST" not in os.environ or os.environ["RAY_HEAD_HOST"] == "":
+        raise ValueError("RAY_HEAD_HOST environment variable empty. Is there a ray cluster running?")
 
-    ray_head = os.environ["RAY_HEAD_IP"]
+    ray_head = os.environ["RAY_HEAD_HOST"]
     ray.init(address=f"{ray_head}:6379")
     main()
