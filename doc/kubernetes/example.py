@@ -1,16 +1,17 @@
-from collections import Counter
 import os
 import sys
 import time
+from collections import Counter
+
 import ray
 
 
 @ray.remote
-def gethostname(x):
+def get_hostname(x):
     import platform
     import time
     time.sleep(0.01)
-    return x + (platform.node(), )
+    return x + (platform.node(),)
 
 
 def wait_for_nodes(expected):
@@ -27,13 +28,13 @@ def wait_for_nodes(expected):
 
 
 def main():
-    wait_for_nodes(4)
+    wait_for_nodes(3)
 
     # Check that objects can be transferred from each node to each other node.
     for i in range(10):
         print("Iteration {}".format(i))
         results = [
-            gethostname.remote(gethostname.remote(())) for _ in range(100)
+            get_hostname.remote(get_hostname.remote(())) for _ in range(100)
         ]
         print(Counter(ray.get(results)))
         sys.stdout.flush()
@@ -43,13 +44,10 @@ def main():
 
 
 if __name__ == "__main__":
-    # NOTE: If you know you're running this on the head node, you can just
-    # use "localhost" here.
-    # redis_host = "localhost"
-    if ("RAY_HEAD_SERVICE_HOST" not in os.environ
-            or os.environ["RAY_HEAD_SERVICE_HOST"] == ""):
-        raise ValueError("RAY_HEAD_SERVICE_HOST environment variable empty."
-                         "Is there a ray cluster running?")
-    redis_host = os.environ["RAY_HEAD_SERVICE_HOST"]
-    ray.init(address=redis_host + ":6379")
+    # NOTE: If you know you're running this on the head node, you can just use "localhost" here.
+    if "RAY_HEAD_IP" not in os.environ or os.environ["RAY_HEAD_IP"] == "":
+        raise ValueError("RAY_HEAD_IP environment variable empty. Is there a ray cluster running?")
+
+    ray_head = os.environ["RAY_HEAD_IP"]
+    ray.init(address=f"{ray_head}:6379")
     main()
